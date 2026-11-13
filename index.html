@@ -1,27 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>DataVis - Assignment 2</title>
-    
-    Instead of this blank page, your beautiful visualizations should appear here :)
-    
-    <!-- Loading d3js version 5-->
-    <script src="d3.v5.min.js"></script>
-  
-    
-    <!-- Loading style.css; use if needed -->
-    <link rel="stylesheet" href="style.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Car Explorer – Scatterplot Matrix</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="d3.v5.min.js"></script>
 </head>
-
 <body>
+  <main class="page-shell">
+    <header class="page-header">
+      <div class="brand-mark" aria-hidden="true">A</div>
+      <div>
+        <p class="eyebrow">EXPLORE VEHICLE DATA</p>
+        <h1>Cars compared</h1>
+        <p class="subtitle">The scatterplot matrix shows how vehicle type, retail price, horsepower, and weight relate to each other.</p>
+      </div>
+    </header>
 
-<!-- YOUR SOLUTION GOES HERE-->
-
-
-<!-- loading the main javascript file; implement logic there -->
-<script src="main.js"></script>
-
+    <section class="chart-card" aria-labelledby="matrix-title">
+      <div class="chart-heading">
+        <div>
+          <p class="eyebrow">DEFAULT VIEW</p>
+          <h2 id="matrix-title">Scatterplot matrix</h2>
+        </div>
+        <span id="vehicle-count" class="vehicle-count">Loading data</span>
+      </div>
+      <p class="chart-instruction">Hover over a point to see vehicle details.</p>
+      <div id="load-error" class="load-error" role="alert" hidden></div>
+      <div class="chart-scroll"><div id="matrix" class="matrix"></div></div>
+      <div class="legend-wrap">
+        <span class="legend-title">Vehicle type</span>
+        <div id="legend" class="legend"></div>
+      </div>
+    </section>
+    <footer>Interactive visualization · Dataset: cars.csv</footer>
+  </main>
+  <div id="tooltip" class="tooltip" role="status" aria-live="polite"></div>
+  <script src="main.js"></script>
 </body>
 </html>

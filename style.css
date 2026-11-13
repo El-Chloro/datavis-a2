@@ -1,5 +1,58 @@
-body {
-    height: 100%;
+:root {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #202b3c;
+  background: #f3f5f8;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --ink: #202b3c;
+  --muted: #728097;
+  --line: #e7ebf1;
+  --accent: #4263eb;
 }
 
-/* YOUR CSS CODE GOES HERE */
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: #f3f5f8; }
+.page-shell { width: min(1450px, calc(100% - 56px)); margin: 0 auto; padding: 44px 0 28px; }
+.page-header { display: flex; align-items: flex-start; gap: 17px; margin: 0 auto 30px; max-width: 1060px; }
+.brand-mark { width: 44px; height: 44px; flex: 0 0 44px; display: grid; place-items: center; border-radius: 14px; color: white; background: #283a62; font: 800 22px 'Segoe UI', Arial, sans-serif; box-shadow: 0 6px 15px #273c6630; }
+.eyebrow { margin: 0 0 6px; color: #74829a; font-size: 10px; font-weight: 700; letter-spacing: .15em; }
+h1, h2 { margin: 0; color: var(--ink); font-family: 'Segoe UI', Arial, sans-serif; letter-spacing: -.035em; }
+h1 { font-size: clamp(28px, 3.3vw, 38px); line-height: 1.15; }
+.subtitle { max-width: 730px; margin: 9px 0 0; color: #6a778c; font-size: 14px; line-height: 1.65; }
+.chart-card { max-width: 1320px; margin: 0 auto; padding: 25px 28px 21px; border: 1px solid #e8ebf0; border-radius: 16px; background: #fff; box-shadow: 0 12px 36px #2637510b; }
+.chart-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.chart-heading h2 { font-size: 20px; }
+.vehicle-count { padding: 7px 11px; border-radius: 999px; color: #60718a; background: #f3f6fa; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.chart-instruction { margin: 8px 0 20px; color: var(--muted); font-size: 12px; }
+.chart-scroll { overflow: auto; padding: 2px 0 6px; }
+.matrix { width: max-content; margin: 0 auto; }
+.matrix svg { display: block; }
+.cell-frame { fill: #fff; stroke: #e9edf3; stroke-width: 1; }
+.cell-diagonal { fill: #f7f8fb; }
+.diagonal-label { fill: #34425a; font: 700 11px 'Segoe UI', Arial, sans-serif; }
+.axis-title { fill: #68768b; font: 600 8px 'Segoe UI', Arial, sans-serif; }
+.tick text { fill: #8490a2; font: 9px 'Segoe UI', Arial, sans-serif; }
+.tick line, .domain { stroke: #cfd6e1; }
+.grid-label { fill: #7c899b; font: 9px 'Segoe UI', Arial, sans-serif; }
+.point { stroke: #fff; stroke-width: .6px; opacity: .7; transition: opacity .12s ease, stroke-width .12s ease; }
+.point:hover { opacity: 1; stroke: #202b3c; stroke-width: 1.3px; }
+.legend-wrap { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 13px; padding: 17px 2px 0; border-top: 1px solid #edf0f4; }
+.legend-title { padding-top: 2px; color: #77849a; font-size: 11px; font-weight: 700; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 15px; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; color: #536176; font-size: 11px; }
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; }
+.load-error { margin: 12px 0; padding: 12px 14px; border: 1px solid #f4c7c7; border-radius: 9px; color: #9e3030; background: #fff4f4; font-size: 13px; }
+footer { max-width: 1320px; margin: 18px auto 0; color: #9aa4b3; font-size: 10px; text-align: right; }
+.tooltip { position: fixed; z-index: 10; pointer-events: none; opacity: 0; max-width: 280px; padding: 10px 12px; border: 1px solid #ffffff24; border-radius: 9px; color: #fff; background: #202b3cf2; box-shadow: 0 7px 22px #19233835; font-size: 11px; line-height: 1.55; transition: opacity .1s ease; }
+.tooltip strong { display: block; margin-bottom: 3px; font-size: 12px; }
+
+@media (max-width: 700px) {
+  .page-shell { width: min(100% - 28px, 1450px); padding-top: 25px; }
+  .page-header { gap: 12px; margin-bottom: 21px; }
+  .brand-mark { width: 38px; height: 38px; flex-basis: 38px; border-radius: 12px; font-size: 19px; }
+  .subtitle { font-size: 13px; }
+  .chart-card { padding: 20px 16px 17px; border-radius: 13px; }
+  .chart-heading h2 { font-size: 18px; }
+  .chart-instruction { margin-bottom: 15px; }
+  .matrix { margin-left: 0; }
+}
