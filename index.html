@@ -24,9 +24,26 @@
           <p class="eyebrow">DEFAULT VIEW</p>
           <h2 id="matrix-title">Scatterplot matrix</h2>
         </div>
-        <span id="vehicle-count" class="vehicle-count">Loading data</span>
+        <div class="chart-stats">
+          <span id="vehicle-count" class="vehicle-count">Loading data</span>
+          <span id="matrix-size" class="vehicle-count">4 × 4</span>
+        </div>
       </div>
       <p class="chart-instruction">Hover over a point to see vehicle details.</p>
+      <section class="attribute-panel" aria-labelledby="attribute-title">
+        <div class="attribute-heading">
+          <div>
+            <h3 id="attribute-title">Choose attributes</h3>
+            <p class="attribute-hint">Select at least two attributes to build the matrix.</p>
+          </div>
+          <div class="attribute-actions">
+            <span id="selection-count" class="selection-count">4 selected</span>
+            <button id="reset-selection" class="reset-button" type="button">Restore defaults</button>
+          </div>
+        </div>
+        <div id="attribute-list" class="attribute-list" aria-label="Available attributes"></div>
+        <p id="selection-message" class="selection-message" aria-live="polite"></p>
+      </section>
       <div id="load-error" class="load-error" role="alert" hidden></div>
       <div class="chart-scroll"><div id="matrix" class="matrix"></div></div>
       <div class="legend-wrap">
