@@ -34,9 +34,16 @@ h1 { font-size: clamp(28px, 3.3vw, 38px); line-height: 1.15; }
 .reset-button { border: 1px solid #dce3ed; border-radius: 7px; padding: 7px 10px; color: #42536e; background: #fff; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
 .reset-button:hover { border-color: #bdcbe0; background: #f5f7fb; }
 .attribute-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 6px; max-height: 142px; overflow: auto; margin-top: 12px; padding: 1px 3px 2px 1px; }
-.attribute-option { display: flex; align-items: center; gap: 8px; min-height: 31px; padding: 5px 8px; border: 1px solid #e5eaf1; border-radius: 7px; color: #536176; background: #fff; font-size: 11px; cursor: pointer; }
-.attribute-option:has(input:checked) { border-color: #cbd6f5; color: #304fae; background: #f3f6ff; }
-.attribute-option input { margin: 0; accent-color: #4263eb; cursor: pointer; }
+.attribute-option { display: grid; grid-template-columns: minmax(0, 1fr) 15px auto; align-items: center; gap: 5px; min-height: 34px; padding: 4px 6px; border: 1px solid #e5eaf1; border-radius: 7px; color: #536176; background: #fff; font-size: 11px; }
+.attribute-option.is-selected { border-color: #cbd6f5; color: #304fae; background: #f3f6ff; }
+.attribute-choice { display: flex; align-items: center; gap: 7px; min-width: 0; cursor: pointer; }
+.attribute-choice input { flex: 0 0 auto; margin: 0; accent-color: #4263eb; cursor: pointer; }
+.attribute-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.order-index { color: #77849a; font-size: 9px; font-variant-numeric: tabular-nums; text-align: center; }
+.order-controls { display: flex; gap: 2px; }
+.order-button { display: grid; width: 19px; height: 21px; place-items: center; padding: 0; border: 1px solid #e1e6ee; border-radius: 4px; color: #58677e; background: #fff; font: inherit; font-size: 12px; line-height: 1; cursor: pointer; }
+.order-button:hover:not(:disabled) { border-color: #aebfe9; color: #3155c5; background: #f2f5ff; }
+.order-button:disabled { color: #c3cad4; background: #f5f6f8; cursor: default; }
 .selection-message { min-height: 0; margin: 0; color: #9e4c30; font-size: 11px; }
 .selection-message:not(:empty) { margin-top: 7px; }
 .chart-scroll { overflow: auto; padding: 2px 0 6px; }

@@ -100,14 +100,25 @@ window.addEventListener('load', () => {
   }
 
   function renderAttributeControls() {
-    const options = d3.select('#attribute-list').selectAll('label').data(availableAttributes, attribute => attribute.key)
-      .join('label').attr('class', 'attribute-option');
+    const options = d3.select('#attribute-list').selectAll('.attribute-option').data(availableAttributes, attribute => attribute.key)
+      .join(enter => {
+        const option = enter.append('div').attr('class', 'attribute-option');
+        const choice = option.append('label').attr('class', 'attribute-choice');
+        choice.append('input').attr('type', 'checkbox');
+        choice.append('span').attr('class', 'attribute-name');
+        option.append('span').attr('class', 'order-index');
+        const orderControls = option.append('span').attr('class', 'order-controls');
+        orderControls.append('button').attr('type', 'button').attr('class', 'order-button move-up')
+          .text('↑').on('click', function (attribute) { moveAttribute(attribute.key, -1); });
+        orderControls.append('button').attr('type', 'button').attr('class', 'order-button move-down')
+          .text('↓').on('click', function (attribute) { moveAttribute(attribute.key, 1); });
+        return option;
+      });
 
     options.each(function (attribute) {
       const option = d3.select(this);
-      option.html('');
-      option.append('input').attr('type', 'checkbox').attr('value', attribute.key)
-        .property('checked', selectedKeys.includes(attribute.key))
+      option.select('label').attr('for', `attribute-${attribute.key}`);
+      option.select('input').attr('id', `attribute-${attribute.key}`).attr('value', attribute.key)
         .on('change', function () {
           const message = document.getElementById('selection-message');
           if (!this.checked && selectedKeys.length <= 2) {
@@ -119,21 +130,48 @@ window.addEventListener('load', () => {
           if (this.checked) selectedKeys.push(attribute.key);
           else selectedKeys = selectedKeys.filter(key => key !== attribute.key);
           updateSelectionCount();
+          updateAttributeControlState();
           renderMatrix();
         });
-      option.append('span').text(attribute.label);
+      option.select('.attribute-name').text(attribute.label);
+      option.select('.move-up').attr('aria-label', `Move ${attribute.label} up in the matrix`);
+      option.select('.move-down').attr('aria-label', `Move ${attribute.label} down in the matrix`);
     });
 
     d3.select('#reset-selection').on('click', () => {
       selectedKeys = defaultKeys.filter(key => availableAttributes.some(attribute => attribute.key === key));
       if (selectedKeys.length < 2) selectedKeys = availableAttributes.slice(0, 2).map(attribute => attribute.key);
       document.getElementById('selection-message').textContent = '';
-      renderAttributeControls();
       updateSelectionCount();
+      updateAttributeControlState();
       renderMatrix();
     });
 
     updateSelectionCount();
+    updateAttributeControlState();
+  }
+
+  function updateAttributeControlState() {
+    d3.select('#attribute-list').selectAll('.attribute-option').each(function (attribute) {
+      const option = d3.select(this);
+      const order = selectedKeys.indexOf(attribute.key);
+      const selected = order >= 0;
+      option.classed('is-selected', selected);
+      option.select('input').property('checked', selected);
+      option.select('.order-index').text(selected ? order + 1 : '');
+      option.select('.move-up').property('disabled', !selected || order === 0);
+      option.select('.move-down').property('disabled', !selected || order === selectedKeys.length - 1);
+    });
+  }
+
+  function moveAttribute(key, offset) {
+    const currentIndex = selectedKeys.indexOf(key);
+    const targetIndex = currentIndex + offset;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= selectedKeys.length) return;
+    const [attribute] = selectedKeys.splice(currentIndex, 1);
+    selectedKeys.splice(targetIndex, 0, attribute);
+    updateAttributeControlState();
+    renderMatrix();
   }
 
   function updateSelectionCount() {
