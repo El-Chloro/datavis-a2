@@ -29,7 +29,7 @@
           <span id="matrix-size" class="vehicle-count">4 × 4</span>
         </div>
       </div>
-      <p class="chart-instruction">Hover over a point to see vehicle details.</p>
+      <p class="chart-instruction">Hover over a point for details, or click it to keep the vehicle selected below.</p>
       <section class="attribute-panel" aria-labelledby="attribute-title">
         <div class="attribute-heading">
           <div>
@@ -49,6 +49,21 @@
       <div class="legend-wrap">
         <span class="legend-title">Vehicle type</span>
         <div id="legend" class="legend"></div>
+      </div>
+    </section>
+    <section class="details-card" aria-labelledby="details-title">
+      <div class="details-heading">
+        <div>
+          <p class="eyebrow">SELECTED VEHICLE</p>
+          <h2 id="details-title">Vehicle details</h2>
+        </div>
+        <span id="selected-type" class="selected-type" hidden></span>
+      </div>
+      <div id="details-content" class="details-content">
+        <div class="empty-state">
+          <span class="empty-icon" aria-hidden="true">✳</span>
+          <p>Select a point in the scatterplot matrix to view its vehicle profile.</p>
+        </div>
       </div>
     </section>
     <footer>Interactive visualization · Dataset: cars.csv</footer>
