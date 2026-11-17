@@ -28,6 +28,7 @@ window.addEventListener('load', () => {
   let records = [];
   let selectedKeys = [];
   let selectedVehicleId = null;
+  let comparisonVehicleId = null;
 
   function normalizedHeader(value) {
     return value.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -205,9 +206,13 @@ window.addEventListener('load', () => {
     return Math.max(0, Math.min(1, (value - extent[0]) / (extent[1] - extent[0])));
   }
 
-  function showRadarTooltip(event, record, attribute) {
-    const value = formatOriginalValue(record[attribute.key], attribute);
-    tooltip.html(`<strong>${escapeHtml(record.name)}</strong>${escapeHtml(attribute.label)}: ${escapeHtml(value)}`)
+  function showRadarTooltip(event, record, attribute, comparisonRecord) {
+    const primaryValue = formatOriginalValue(record[attribute.key], attribute);
+    const comparisonValue = comparisonRecord ? formatOriginalValue(comparisonRecord[attribute.key], attribute) : null;
+    const comparisonText = comparisonRecord
+      ? `<br>${escapeHtml(comparisonRecord.name)}: ${escapeHtml(comparisonValue)}`
+      : '';
+    tooltip.html(`<strong>${escapeHtml(attribute.label)}</strong>${escapeHtml(record.name)}: ${escapeHtml(primaryValue)}${comparisonText}`)
       .style('left', `${event.clientX + 13}px`)
       .style('top', `${event.clientY + 13}px`)
       .style('opacity', 1);
@@ -215,6 +220,7 @@ window.addEventListener('load', () => {
 
   function renderDetails() {
     const record = records.find(item => item.id === selectedVehicleId);
+    const comparisonRecord = records.find(item => item.id === comparisonVehicleId);
     const content = d3.select('#details-content');
     const typeChip = document.getElementById('selected-type');
     content.html('');
@@ -233,31 +239,66 @@ window.addEventListener('load', () => {
     summary.append('h3').text(record.name);
     summary.append('p').text(`${record.type} · Selected in the scatterplot matrix`);
 
+    const compareControl = content.append('div').attr('class', 'compare-control');
+    compareControl.append('label').attr('for', 'comparison-select').text('Compare with');
+    const compareSelect = compareControl.append('select').attr('id', 'comparison-select')
+      .attr('aria-label', 'Select a second vehicle to compare');
+    compareSelect.append('option').attr('value', '').text('No comparison');
+    compareSelect.selectAll('.vehicle-option')
+      .data(records.filter(item => item.id !== record.id).slice().sort((a, b) => d3.ascending(a.name, b.name)))
+      .join('option').attr('class', 'vehicle-option')
+      .attr('value', item => item.id)
+      .text(item => `${item.name} (${item.type})`);
+    compareSelect.select('option[value=""]').property('selected', comparisonRecord == null);
+    compareSelect.selectAll('.vehicle-option').property('selected', item => comparisonRecord && item.id === comparisonRecord.id);
+    compareSelect.on('change', function () {
+      const requestedId = this.value === '' ? null : Number(this.value);
+      comparisonVehicleId = requestedId === record.id ? null : requestedId;
+      renderMatrix();
+      renderDetails();
+    });
+
     const detailsGrid = content.append('div').attr('class', 'details-grid');
     const starPanel = detailsGrid.append('section').attr('class', 'star-panel');
-    starPanel.append('h3').text('Normalized attribute profile');
-    starPanel.append('p').attr('class', 'detail-hint').text('Values are scaled from 0 to 1 across the dataset. Hover over an axis to see the original value.');
-    renderStarPlot(starPanel, record);
+    starPanel.append('h3').text(comparisonRecord ? 'Normalized profile comparison' : 'Normalized attribute profile');
+    starPanel.append('p').attr('class', 'detail-hint').text('Values are scaled from 0 to 1 across the dataset. Hover over an axis to compare original values.');
+    renderStarPlot(starPanel, record, comparisonRecord);
+
+    const profileLegend = starPanel.append('div').attr('class', 'radar-legend');
+    const primaryLegend = profileLegend.append('span').attr('class', 'radar-legend-entry');
+    primaryLegend.append('i').attr('class', 'radar-key primary-key');
+    primaryLegend.append('span').text(record.name);
+    if (comparisonRecord) {
+      const comparisonLegend = profileLegend.append('span').attr('class', 'radar-legend-entry');
+      comparisonLegend.append('i').attr('class', 'radar-key comparison-key');
+      comparisonLegend.append('span').text(comparisonRecord.name);
+    }
 
     const valuesPanel = detailsGrid.append('section').attr('class', 'values-panel');
-    valuesPanel.append('h3').text('Original values');
+    valuesPanel.append('h3').text(comparisonRecord ? 'Original value comparison' : 'Original values');
     valuesPanel.append('p').attr('class', 'detail-hint').text('Measurements use the units from the dataset.');
     const valueRows = [
-      { label: 'Name', value: record.name },
-      { label: 'Vehicle type', value: record.type },
+      { label: 'Name', value: record.name, comparison: comparisonRecord && comparisonRecord.name },
+      { label: 'Vehicle type', value: record.type, comparison: comparisonRecord && comparisonRecord.type },
       ...availableAttributes.filter(attribute => attribute.kind === 'number').map(attribute => ({
         label: attribute.label,
-        value: formatOriginalValue(record[attribute.key], attribute)
+        value: formatOriginalValue(record[attribute.key], attribute),
+        comparison: comparisonRecord ? formatOriginalValue(comparisonRecord[attribute.key], attribute) : null
       }))
     ];
     const table = valuesPanel.append('table').attr('class', 'original-values');
+    const header = table.append('thead').append('tr');
+    header.append('th').text('Attribute');
+    header.append('th').text(record.name);
+    if (comparisonRecord) header.append('th').text(comparisonRecord.name);
     const body = table.append('tbody');
     const rows = body.selectAll('tr').data(valueRows).join('tr');
     rows.append('th').attr('scope', 'row').text(row => row.label);
     rows.append('td').text(row => row.value);
+    if (comparisonRecord) rows.append('td').text(row => row.comparison);
   }
 
-  function renderStarPlot(container, record) {
+  function renderStarPlot(container, record, comparisonRecord) {
     const radarAttributes = availableAttributes.filter(attribute => attribute.kind === 'number');
     const width = 500;
     const height = 410;
@@ -282,14 +323,15 @@ window.addEventListener('load', () => {
         .attr('x', centerX + 4).attr('y', centerY - radius * level - 3).text(level.toFixed(2));
     });
 
-    const values = radarAttributes.map((attribute, index) => ({
+    const valuesFor = vehicle => radarAttributes.map((attribute, index) => ({
       attribute,
       index,
-      normalized: normalizeForRadar(record[attribute.key], attribute)
+      normalized: normalizeForRadar(vehicle[attribute.key], attribute)
     }));
-    const axes = plot.selectAll('.radar-axis').data(values).join('g').attr('class', 'radar-axis')
-      .on('mouseenter', function (item) { showRadarTooltip(d3.event, record, item.attribute); })
-      .on('mousemove', function (item) { showRadarTooltip(d3.event, record, item.attribute); })
+    const primaryValues = valuesFor(record);
+    const axes = plot.selectAll('.radar-axis').data(primaryValues).join('g').attr('class', 'radar-axis')
+      .on('mouseenter', function (item) { showRadarTooltip(d3.event, record, item.attribute, comparisonRecord); })
+      .on('mousemove', function (item) { showRadarTooltip(d3.event, record, item.attribute, comparisonRecord); })
       .on('mouseleave', function () { tooltip.style('opacity', 0); });
 
     axes.append('line').attr('class', 'radar-spoke')
@@ -309,17 +351,23 @@ window.addEventListener('load', () => {
     const line = d3.line().defined(item => item.normalized !== null)
       .x(item => pointAt(item.index, item.normalized).x)
       .y(item => pointAt(item.index, item.normalized).y);
-    const complete = values.every(item => item.normalized !== null);
-    const path = line(values);
-    if (path) {
-      plot.append('path').attr('class', complete ? 'radar-area' : 'radar-area radar-incomplete')
-        .attr('d', complete ? `${path}Z` : path);
-    }
-    plot.selectAll('.radar-value').data(values.filter(item => item.normalized !== null)).join('circle')
-      .attr('class', 'radar-value')
-      .attr('cx', item => pointAt(item.index, item.normalized).x)
-      .attr('cy', item => pointAt(item.index, item.normalized).y)
-      .attr('r', 3.2);
+    const drawSeries = (vehicle, seriesClass) => {
+      const values = valuesFor(vehicle);
+      const complete = values.every(item => item.normalized !== null);
+      const path = line(values);
+      if (path) {
+        plot.append('path')
+          .attr('class', `radar-area radar-${seriesClass}${complete ? '' : ' radar-incomplete'}`)
+          .attr('d', complete ? `${path}Z` : path);
+      }
+      plot.selectAll(`.radar-value-${seriesClass}`).data(values.filter(item => item.normalized !== null)).join('circle')
+        .attr('class', `radar-value radar-value-${seriesClass}`)
+        .attr('cx', item => pointAt(item.index, item.normalized).x)
+        .attr('cy', item => pointAt(item.index, item.normalized).y)
+        .attr('r', 3.2);
+    };
+    if (comparisonRecord) drawSeries(comparisonRecord, 'comparison');
+    drawSeries(record, 'primary');
   }
 
   function escapeHtml(value) {
@@ -389,12 +437,15 @@ window.addEventListener('load', () => {
         .attr('aria-label', record => `${record.name}, ${record.type}. Select vehicle.`)
         .attr('cx', record => padding.left + xPosition(record))
         .attr('cy', record => padding.top + yPosition(record))
-        .attr('r', record => record.id === selectedVehicleId ? 4.6 : 2.6)
+        .attr('r', record => record.id === selectedVehicleId || record.id === comparisonVehicleId ? 4.8 : 2.6)
         .attr('fill', record => colors(record.type))
-        .style('opacity', record => selectedVehicleId === null || record.id === selectedVehicleId ? 0.76 : 0.12)
-        .classed('selected', record => record.id === selectedVehicleId)
+        .style('opacity', record => selectedVehicleId === null || record.id === selectedVehicleId || record.id === comparisonVehicleId ? 0.82 : 0.12)
+        .classed('selected', record => record.id === selectedVehicleId || record.id === comparisonVehicleId)
+        .classed('primary-selected', record => record.id === selectedVehicleId)
+        .classed('comparison-selected', record => record.id === comparisonVehicleId)
         .on('mouseenter', function (record) {
           d3.select(this).raise();
+          d3.select(this).style('opacity', 1);
           showTooltip(d3.event, record, xAttribute, yAttribute);
         })
         .on('mousemove', function (record) { showTooltip(d3.event, record, xAttribute, yAttribute); })
@@ -405,7 +456,10 @@ window.addEventListener('load', () => {
             selectVehicle(record);
           }
         })
-        .on('mouseleave', function () { tooltip.style('opacity', 0); });
+        .on('mouseleave', function (record) {
+          d3.select(this).style('opacity', selectedVehicleId === null || record.id === selectedVehicleId || record.id === comparisonVehicleId ? 0.82 : 0.12);
+          tooltip.style('opacity', 0);
+        });
 
       group.append('text').attr('class', 'axis-title x-axis-title')
         .attr('x', padding.left + plotWidth / 2).attr('y', 13)
@@ -444,6 +498,7 @@ window.addEventListener('load', () => {
 
   function selectVehicle(record) {
     selectedVehicleId = record.id;
+    if (comparisonVehicleId === selectedVehicleId) comparisonVehicleId = null;
     tooltip.style('opacity', 0);
     renderMatrix();
     renderDetails();
